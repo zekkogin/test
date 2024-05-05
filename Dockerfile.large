@@ -1,0 +1,22 @@
+FROM golang:1.22-alpine
+
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid 1000 \
+    user
+
+WORKDIR /server
+COPY . .
+
+RUN go mod download
+RUN go mod verify
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /http-server .
+
+USER user:user
+
+CMD ["/http-server"]

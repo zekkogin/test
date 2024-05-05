@@ -1,0 +1,15 @@
+FROM golang:1.22-alpine as golang
+
+WORKDIR /server
+COPY . .
+
+RUN go mod download
+RUN go mod verify
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /http-server .
+
+FROM gcr.io/distroless/static-debian11
+
+COPY --from=golang /http-server .
+
+CMD ["/http-server"]
